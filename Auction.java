@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-
+import java.util.Iterator;
 /**
  * A simple model of an auction.
  * The auction maintains a list of lots of arbitrary length.
@@ -42,7 +42,7 @@ public class Auction
             System.out.println(aLot.toString());
         }
     }
-    
+
     /**
      * Make a bid for a lot.
      * A message is printed indicating whether the bid is successful or not.
@@ -55,18 +55,20 @@ public class Auction
     {
         Lot selectedLot = getLot(lotNumber);
         if(selectedLot != null) {
-            Bid aBid = new Bid(bidder, value);
-            boolean successful = selectedLot.bidFor(aBid);
+            // Bid aBid = new Bid(bidder, value);
+            // boolean successful = selectedLot.bidFor(aBid);
+            // Question 2
+            boolean successful = selectedLot.bidFor(new Bid(bidder, value));
             if(successful) {
                 System.out.println("The bid for lot number " +
-                                   lotNumber + " was successful.");
+                    lotNumber + " was successful.");
             }
             else {
                 // Report which bid is higher.
                 Bid highestBid = selectedLot.getHighestBid();
                 System.out.println("Lot number: " + lotNumber +
-                                   " already has a bid of: " +
-                                   highestBid.getValue());
+                    " already has a bid of: " +
+                    highestBid.getValue());
             }
         }
     }
@@ -79,26 +81,56 @@ public class Auction
      */
     public Lot getLot(int lotNumber)
     {
-        if((lotNumber >= 1) && (lotNumber < nextLotNumber)) {
-            // The number seems to be reasonable.
-            Lot selectedLot = listOfLots.get(lotNumber - 1);
-            // Include a confidence check to be sure we have the
-            // right lot.
-            if(selectedLot.getNumber() != lotNumber) {
-                System.out.println("Internal error: Lot number " +
-                                   selectedLot.getNumber() +
-                                   " was returned instead of " +
-                                   lotNumber);
-                // Don't return an invalid lot.
-                selectedLot = null;
+        //Question 5, originally 7. After removing lots, you risk getting internal errors.
+
+        //Question 6, originally 8.
+        for (Lot aLot : listOfLots) { 
+            if (aLot.getNumber() ==lotNumber) {
+                return aLot;
             }
-            return selectedLot;
         }
-        else {
-            System.out.println("Lot number: " + lotNumber +
-                               " does not exist.");
-            return null;
+
+        System.out.println("Lot number: " + lotNumber +
+            " does not exist.");
+        return null;
+
+    }
+
+    //Question 3
+    public void close() {
+        for (Lot aLot : listOfLots) {
+            Bid highest = aLot.getHighestBid();
+            if( highest == null) {
+                System.out.println("No bid for lot number" + aLot.getNumber());
+            }else {
+                System.out.println("Highest bid for lot number" + aLot.getNumber() + "was" + highest.getValue());
+                System.out.println("Bidder was" +  highest.getBidder().getName());
+
+            }
         }
     }
+    //Question 4
+    public ArrayList<Lot> getUnsold() {
+        ArrayList<Lot> unsold = new ArrayList<>();
+        for (Lot aLot : listOfLots) {
+            Bid highest = aLot.getHighestBid();
+            if( highest == null) {
+                unsold.add(aLot);
+            }
+        }
+        return unsold;
+    }
+    //Question 7, originally 9
+    public Lot removeLot(int number) {
+        Iterator<Lot> it = listOfLots.iterator();
+        while(it.hasNext()) {
+            Lot aLot = it.next();
+            if(aLot.getNumber() == number) {
+                it.remove();
+                return aLot;
+            }
+        }
+        // in this case, no lot was found with that number
+        return null;
+    }
 }
-
